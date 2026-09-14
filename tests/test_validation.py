@@ -23,27 +23,48 @@ class RegistryValidationTests(unittest.TestCase):
             "revision": "a" * 40,
             "license": "MIT",
             "status": "provisional",
-            "decision": "wrap",
-            "mechanisms": ["memory"],
-            "evidence": ["src/memory.py"],
             "notes": "test donor",
+            "components": [
+                {
+                    "id": "memory-store",
+                    "decision": "wrap",
+                    "claim": "The memory store can be isolated behind an adapter.",
+                    "evidence": ["src/memory.py"],
+                    "notes": "test component",
+                }
+            ],
         }
 
     def test_valid_registry(self) -> None:
-        path = self.write_json({"schema_version": 1, "donors": [self.donor()]})
+        path = self.write_json({"schema_version": 2, "donors": [self.donor()]})
         self.assertEqual(validate_registry(path), ["example"])
 
     def test_duplicate_donor_ids_fail(self) -> None:
         donor = self.donor()
-        path = self.write_json({"schema_version": 1, "donors": [donor, dict(donor)]})
+        path = self.write_json({"schema_version": 2, "donors": [donor, dict(donor)]})
+        with self.assertRaises(ValidationError):
+            validate_registry(path)
+
+    def test_duplicate_component_ids_fail(self) -> None:
+        donor = self.donor()
+        donor["components"].append(dict(donor["components"][0]))
+        path = self.write_json({"schema_version": 2, "donors": [donor]})
         with self.assertRaises(ValidationError):
             validate_registry(path)
 
     def test_direct_reuse_requires_verified_license(self) -> None:
         donor = self.donor()
-        donor["decision"] = "direct_reuse"
+        donor["components"][0]["decision"] = "direct_reuse"
         donor["license"] = "verify"
-        path = self.write_json({"schema_version": 1, "donors": [donor]})
+        path = self.write_json({"schema_version": 2, "donors": [donor]})
+        with self.assertRaises(ValidationError):
+            validate_registry(path)
+
+    def test_accepted_donor_requires_verified_license(self) -> None:
+        donor = self.donor()
+        donor["status"] = "accepted"
+        donor["license"] = "verify"
+        path = self.write_json({"schema_version": 2, "donors": [donor]})
         with self.assertRaises(ValidationError):
             validate_registry(path)
 
