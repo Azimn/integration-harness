@@ -4,7 +4,10 @@ import importlib.util
 import unittest
 
 
-ANIMA_AVAILABLE = importlib.util.find_spec("anima.store") is not None
+try:
+    ANIMA_AVAILABLE = importlib.util.find_spec("anima.store") is not None
+except ModuleNotFoundError:
+    ANIMA_AVAILABLE = False
 
 
 @unittest.skipUnless(ANIMA_AVAILABLE, "pinned Anima donor is not on PYTHONPATH")
