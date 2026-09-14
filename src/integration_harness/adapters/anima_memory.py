@@ -31,7 +31,7 @@ class MemoryView:
 
 
 def git_blob_sha1(path: str | Path) -> str:
-    data = Path(path).read_bytes()
+    data = Path(path).read_bytes().replace(b"\r\n", b"\n")
     header = f"blob {len(data)}\0".encode("ascii")
     return hashlib.sha1(header + data).hexdigest()
 
