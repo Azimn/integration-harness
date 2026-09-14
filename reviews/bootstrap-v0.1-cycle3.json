@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "experiment_id": "bootstrap-v0.1-cycle3",
+  "implementation_revision": "82f33239dfca9b77294e0fc0ac244051fed0b3f9",
+  "reviewer_role": "adversarial architecture and CI reviewer",
+  "verdict": "pass",
+  "objections": [
+    {
+      "id": "B2",
+      "severity": "medium",
+      "status": "resolved",
+      "claim": "CI previously validated review artifacts without proving that a review covered the latest substantive implementation state.",
+      "evidence": "The validator now requires a passing review whose implementation revision is an ancestor of HEAD and rejects coverage when any later path is outside a top-level reviews/*.json artifact. CI checks out full history and invokes the gate on every configured push and pull request.",
+      "disposition": "Resolved. Deterministic tests cover allowed review-only follow-up, substantive code after review, non-ancestor reviews, nonpassing reviews, and nested nonartifact paths."
+    },
+    {
+      "id": "B3",
+      "severity": "medium",
+      "status": "open",
+      "claim": "The gate is intentionally conservative if the pull request base branch advances after review, because the synthetic merge commit can contain base changes not present in the reviewed implementation revision.",
+      "evidence": "Coverage is computed by diffing the reviewed revision directly against the checked-out CI head. This can create a false negative after unrelated base-branch movement, but it cannot create a false positive for unreviewed feature changes.",
+      "disposition": "Accept for now because failing closed is preferable for the research harness. If it becomes operationally noisy, compare against the PR head revision while separately validating base ancestry."
+    }
+  ]
+}
