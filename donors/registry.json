@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "donors": [
+    {
+      "id": "anima-always-awake",
+      "repository": "huodebing-alt/anima",
+      "revision": "ba215ce72bcaedd147d5d08de6e54555a62952c1",
+      "license": "MIT",
+      "status": "provisional",
+      "decision": "adapt",
+      "mechanisms": [
+        "sqlite_memory_store",
+        "retrieval_reinforcement",
+        "decay_archive_purge",
+        "adaptive_heartbeat",
+        "sleep_scheduler",
+        "llm_consolidation",
+        "reflection",
+        "dream_recombination",
+        "self_model_rewrite"
+      ],
+      "evidence": [
+        "anima/store.py",
+        "anima/sleep.py",
+        "anima/agent.py",
+        "tests/"
+      ],
+      "notes": "Reuse by subsystem only. Canonical self-model rewriting is not accepted as identity authority; dream insight mining requires ablation against ordinary reflection."
+    },
+    {
+      "id": "duck",
+      "repository": "Azimn/DUCK",
+      "revision": "4db5df076eb87a40a5e57d38188821eee7ac804a",
+      "license": "verify",
+      "status": "provisional",
+      "decision": "wrap",
+      "mechanisms": [
+        "subject_access_firewall",
+        "motivated_prospective_agency",
+        "endogenous_goal_formation",
+        "persistent_planning",
+        "outcome_driven_replanning",
+        "paired_history_evaluation_patterns"
+      ],
+      "evidence": [
+        "README.md",
+        "docs/DONOR_AUDIT_v0.1.md",
+        "tests/"
+      ],
+      "notes": "Treat as a donor and evaluation source, not as the base class of the integration harness. License must be explicitly verified before direct code reuse."
+    },
+    {
+      "id": "first-person-loop",
+      "repository": "Azimn/FirstPersonLoopTest",
+      "revision": "f61b39d4b70eb5b905a225ec6f4cb728a452e922",
+      "license": "verify",
+      "status": "provisional",
+      "decision": "adapt",
+      "mechanisms": [
+        "hidden_state_to_first_person_transduction",
+        "private_thought_vs_intentional_speech",
+        "threshold_driven_interoception",
+        "scripted_llm_free_test_backend"
+      ],
+      "evidence": [
+        "subjective_character_loop_v0_1/README.md",
+        "subjective_character_loop_v0_1/subjective_loop.py",
+        "subjective_character_loop_v0_1/test_subjective_loop.py"
+      ],
+      "notes": "Strong candidate for the substrate-to-phenomenology boundary and model-independent control-flow tests. License must be verified before direct code reuse."
+    }
+  ]
+}
