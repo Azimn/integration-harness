@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "donors": [
     {
       "id": "anima-always-awake",
@@ -7,25 +7,44 @@
       "revision": "ba215ce72bcaedd147d5d08de6e54555a62952c1",
       "license": "MIT",
       "status": "provisional",
-      "decision": "adapt",
-      "mechanisms": [
-        "sqlite_memory_store",
-        "retrieval_reinforcement",
-        "decay_archive_purge",
-        "adaptive_heartbeat",
-        "sleep_scheduler",
-        "llm_consolidation",
-        "reflection",
-        "dream_recombination",
-        "self_model_rewrite"
-      ],
-      "evidence": [
-        "anima/store.py",
-        "anima/sleep.py",
-        "anima/agent.py",
-        "tests/"
-      ],
-      "notes": "Reuse by subsystem only. Canonical self-model rewriting is not accepted as identity authority; dream insight mining requires ablation against ordinary reflection."
+      "notes": "Audit by subsystem only. Whole-repository adoption is not approved.",
+      "components": [
+        {
+          "id": "memory-store",
+          "decision": "adapt",
+          "claim": "SQLite persistence, retrieval reinforcement, and deterministic decay are separable enough to evaluate behind an adapter.",
+          "evidence": ["anima/store.py", "tests/"],
+          "notes": "Preserve injected embedding and clock boundaries for deterministic tests."
+        },
+        {
+          "id": "heartbeat-scheduler",
+          "decision": "wrap",
+          "claim": "Adaptive ticks, fatigue, sleep pressure, restart continuity, and wake/sleep transitions can be evaluated as operational scheduling rather than cognition.",
+          "evidence": ["anima/agent.py"],
+          "notes": "Do not attribute LLM-generated contemplative actions to the scheduler itself."
+        },
+        {
+          "id": "sleep-consolidation",
+          "decision": "wrap",
+          "claim": "Episode-to-semantic consolidation and reflection are testable donor procedures but remain LLM-mediated.",
+          "evidence": ["anima/sleep.py"],
+          "notes": "Compare against simpler summarization and no-consolidation baselines."
+        },
+        {
+          "id": "canonical-self-model-rewrite",
+          "decision": "reject",
+          "claim": "Free-form LLM rewriting should not own canonical identity state.",
+          "evidence": ["anima/sleep.py"],
+          "notes": "May be retained later as a non-authoritative narrative-self layer."
+        },
+        {
+          "id": "dream-insight-mining",
+          "decision": "test_pattern",
+          "claim": "Dream recombination is interesting but needs controlled ablation before production reuse.",
+          "evidence": ["anima/sleep.py"],
+          "notes": "Require comparison against ordinary reflection using the same memory seeds and model budget."
+        }
+      ]
     },
     {
       "id": "duck",
@@ -33,21 +52,37 @@
       "revision": "4db5df076eb87a40a5e57d38188821eee7ac804a",
       "license": "verify",
       "status": "provisional",
-      "decision": "wrap",
-      "mechanisms": [
-        "subject_access_firewall",
-        "motivated_prospective_agency",
-        "endogenous_goal_formation",
-        "persistent_planning",
-        "outcome_driven_replanning",
-        "paired_history_evaluation_patterns"
-      ],
-      "evidence": [
-        "README.md",
-        "docs/DONOR_AUDIT_v0.1.md",
-        "tests/"
-      ],
-      "notes": "Treat as a donor and evaluation source, not as the base class of the integration harness. License must be explicitly verified before direct code reuse."
+      "notes": "Treat as a mechanism and evaluation donor, not as the integration base class.",
+      "components": [
+        {
+          "id": "subject-access-firewall",
+          "decision": "wrap",
+          "claim": "Developer substrate state and first-person character experience should remain authority-separated.",
+          "evidence": ["README.md", "tests/"],
+          "notes": "Preserve the boundary if reused."
+        },
+        {
+          "id": "motivated-prospective-agency",
+          "decision": "wrap",
+          "claim": "Motivated goal, intention, and prospective-action machinery should be tested as an independent donor subsystem.",
+          "evidence": ["README.md", "tests/"],
+          "notes": "Do not assume success from architecture description alone. Reproduce longitudinal tests."
+        },
+        {
+          "id": "planning-and-replanning",
+          "decision": "wrap",
+          "claim": "Persistent plans and outcome-driven route changes are potentially reusable without making DUCK the whole runtime.",
+          "evidence": ["README.md", "tests/"],
+          "notes": "Compare against a simpler explicit-goal baseline."
+        },
+        {
+          "id": "paired-history-evaluation",
+          "decision": "test_pattern",
+          "claim": "Matched present conditions after divergent histories are a high-value causal continuity test.",
+          "evidence": ["docs/DONOR_AUDIT_v0.1.md"],
+          "notes": "Adopt the evaluation pattern independently of production code."
+        }
+      ]
     },
     {
       "id": "first-person-loop",
@@ -55,19 +90,23 @@
       "revision": "f61b39d4b70eb5b905a225ec6f4cb728a452e922",
       "license": "verify",
       "status": "provisional",
-      "decision": "adapt",
-      "mechanisms": [
-        "hidden_state_to_first_person_transduction",
-        "private_thought_vs_intentional_speech",
-        "threshold_driven_interoception",
-        "scripted_llm_free_test_backend"
-      ],
-      "evidence": [
-        "subjective_character_loop_v0_1/README.md",
-        "subjective_character_loop_v0_1/subjective_loop.py",
-        "subjective_character_loop_v0_1/test_subjective_loop.py"
-      ],
-      "notes": "Strong candidate for the substrate-to-phenomenology boundary and model-independent control-flow tests. License must be verified before direct code reuse."
+      "notes": "Candidate donor for substrate-to-phenomenology transduction and model-independent control-flow testing.",
+      "components": [
+        {
+          "id": "first-person-transducer",
+          "decision": "adapt",
+          "claim": "Hidden numerical state can be translated into bounded first-person experience without exposing raw telemetry.",
+          "evidence": ["subjective_character_loop_v0_1/README.md", "subjective_character_loop_v0_1/subjective_loop.py"],
+          "notes": "Keep world authority and character experience distinct."
+        },
+        {
+          "id": "scripted-test-backend",
+          "decision": "test_pattern",
+          "claim": "Control-flow and persistence behavior can be tested without requiring an LLM.",
+          "evidence": ["subjective_character_loop_v0_1/test_subjective_loop.py"],
+          "notes": "Useful as a baseline for architecture-only tests."
+        }
+      ]
     }
   ]
 }
