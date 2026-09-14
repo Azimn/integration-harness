@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "experiment_id": "bootstrap-v0.1-cycle1",
+  "implementation_revision": "96e4df042c0255df84d866d3c11b10b23fa61a74",
+  "reviewer_role": "adversarial architecture reviewer",
+  "verdict": "revise",
+  "objections": [
+    {
+      "id": "B1",
+      "severity": "high",
+      "status": "open",
+      "claim": "The donor registry stores one decision per repository, but the project charter says the default reuse unit is a narrow mechanism.",
+      "evidence": "The Anima audit already assigns different decisions to memory dynamics, heartbeat scheduling, self-model rewriting, and dream mining, while registry.json can encode only one top-level decision.",
+      "disposition": "Move decisions to component-level records and validate every component independently."
+    },
+    {
+      "id": "B2",
+      "severity": "medium",
+      "status": "open",
+      "claim": "CI validates review files that happen to exist but does not prove every substantive change produced a review artifact.",
+      "evidence": "The workflow scans reviews/*.json without tying a review artifact to the current implementation revision.",
+      "disposition": "Document this bootstrap limitation now and add revision-aware review enforcement before cognitive integration begins."
+    }
+  ]
+}
