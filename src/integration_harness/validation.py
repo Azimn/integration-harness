@@ -54,13 +54,13 @@ def validate_registry(path: str | Path) -> list[str]:
     data = _load_json(path)
     if not isinstance(data, dict):
         raise ValidationError("registry root must be an object")
-    if data.get("schema_version") != 1:
-        raise ValidationError("registry schema_version must be 1")
+    if data.get("schema_version") != 2:
+        raise ValidationError("registry schema_version must be 2")
     donors = data.get("donors")
     if not isinstance(donors, list) or not donors:
         raise ValidationError("registry donors must be a non-empty list")
 
-    seen: set[str] = set()
+    seen_donors: set[str] = set()
     validated: list[str] = []
     for index, donor in enumerate(donors):
         where = f"donors[{index}]"
@@ -68,9 +68,9 @@ def validate_registry(path: str | Path) -> list[str]:
             raise ValidationError(f"{where} must be an object")
 
         donor_id = _require_text(donor, "id", where)
-        if donor_id in seen:
+        if donor_id in seen_donors:
             raise ValidationError(f"duplicate donor id: {donor_id}")
-        seen.add(donor_id)
+        seen_donors.add(donor_id)
 
         repository = _require_text(donor, "repository", where)
         if repository.count("/") != 1:
@@ -82,19 +82,36 @@ def validate_registry(path: str | Path) -> list[str]:
 
         license_name = _require_text(donor, "license", where)
         status = _require_text(donor, "status", where)
-        decision = _require_text(donor, "decision", where)
-        _require_string_list(donor, "mechanisms", where)
-        _require_string_list(donor, "evidence", where)
         _require_text(donor, "notes", where)
-
         if status not in VALID_DONOR_STATUS:
             raise ValidationError(f"{where}.status has unsupported value {status!r}")
-        if decision not in VALID_DECISIONS:
-            raise ValidationError(f"{where}.decision has unsupported value {decision!r}")
         if status == "accepted" and license_name.lower() == "verify":
             raise ValidationError(f"{where} cannot be accepted before license verification")
-        if decision == "direct_reuse" and license_name.lower() == "verify":
-            raise ValidationError(f"{where} cannot directly reuse code before license verification")
+
+        components = donor.get("components")
+        if not isinstance(components, list) or not components:
+            raise ValidationError(f"{where}.components must be a non-empty list")
+
+        seen_components: set[str] = set()
+        for component_index, component in enumerate(components):
+            cwhere = f"{where}.components[{component_index}]"
+            if not isinstance(component, dict):
+                raise ValidationError(f"{cwhere} must be an object")
+            component_id = _require_text(component, "id", cwhere)
+            if component_id in seen_components:
+                raise ValidationError(f"duplicate component id in {donor_id}: {component_id}")
+            seen_components.add(component_id)
+
+            decision = _require_text(component, "decision", cwhere)
+            _require_text(component, "claim", cwhere)
+            _require_string_list(component, "evidence", cwhere)
+            _require_text(component, "notes", cwhere)
+            if decision not in VALID_DECISIONS:
+                raise ValidationError(f"{cwhere}.decision has unsupported value {decision!r}")
+            if decision == "direct_reuse" and license_name.lower() == "verify":
+                raise ValidationError(
+                    f"{cwhere} cannot directly reuse code before license verification"
+                )
 
         validated.append(donor_id)
     return validated
