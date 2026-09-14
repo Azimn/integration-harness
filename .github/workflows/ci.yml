@@ -34,3 +34,41 @@ jobs:
         run: >-
           python -m integration_harness donors/registry.json reviews
           --require-review-gate --head "$GITHUB_SHA" --repo-root .
+
+  anima-memory-donor:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - name: Check out integration harness
+        uses: actions/checkout@v4
+
+      - name: Check out pinned Anima donor
+        uses: actions/checkout@v4
+        with:
+          repository: huodebing-alt/anima
+          ref: ba215ce72bcaedd147d5d08de6e54555a62952c1
+          path: .donors/anima
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Reproduce Anima upstream memory tests
+        env:
+          PYTHONPATH: .donors/anima
+        run: python -m unittest discover -s .donors/anima/tests -p 'test_store.py' -v
+
+      - name: Run harness Anima memory experiment tests
+        env:
+          PYTHONPATH: src:.donors/anima
+        run: python -m unittest discover -s tests -p 'test_anima_memory_experiment.py' -v
+
+      - name: Run matched-history experiment
+        env:
+          PYTHONPATH: src:.donors/anima
+        run: python -m integration_harness.experiments.anima_memory
