@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import json
 import re
+import subprocess
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 HEX40 = re.compile(r"^[0-9a-f]{40}$")
 VALID_DECISIONS = {
@@ -117,15 +118,14 @@ def validate_registry(path: str | Path) -> list[str]:
     return validated
 
 
-def validate_review(path: str | Path) -> str:
-    path = Path(path)
+def _validate_review_data(path: Path) -> dict[str, Any]:
     data = _load_json(path)
     if not isinstance(data, dict):
         raise ValidationError(f"review root must be an object: {path}")
     if data.get("schema_version") != 1:
         raise ValidationError(f"review schema_version must be 1: {path}")
 
-    experiment_id = _require_text(data, "experiment_id", str(path))
+    _require_text(data, "experiment_id", str(path))
     revision = _require_text(data, "implementation_revision", str(path))
     if not HEX40.fullmatch(revision):
         raise ValidationError(f"{path}.implementation_revision must be a 40-character git SHA")
@@ -158,7 +158,13 @@ def validate_review(path: str | Path) -> str:
 
     if verdict == "pass" and open_high:
         raise ValidationError(f"{path} cannot pass with {open_high} open high-severity objection(s)")
-    return experiment_id
+    return data
+
+
+def validate_review(path: str | Path) -> str:
+    path = Path(path)
+    data = _validate_review_data(path)
+    return str(data["experiment_id"])
 
 
 def validate_reviews(directory: str | Path) -> list[str]:
@@ -169,3 +175,91 @@ def validate_reviews(directory: str | Path) -> list[str]:
     for path in sorted(directory.glob("*.json")):
         validated.append(validate_review(path))
     return validated
+
+
+def _git_is_ancestor(revision: str, head_revision: str, repo_root: Path) -> bool:
+    result = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", revision, head_revision],
+        cwd=repo_root,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=False,
+    )
+    if result.returncode == 0:
+        return True
+    if result.returncode == 1:
+        return False
+    raise ValidationError(
+        "git could not evaluate review ancestry: " + result.stderr.strip()
+    )
+
+
+def _git_changed_paths(revision: str, head_revision: str, repo_root: Path) -> list[str]:
+    result = subprocess.run(
+        ["git", "diff", "--name-only", f"{revision}..{head_revision}"],
+        cwd=repo_root,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        raise ValidationError(
+            "git could not inspect post-review changes: " + result.stderr.strip()
+        )
+    return [line.strip() for line in result.stdout.splitlines() if line.strip()]
+
+
+def _post_review_paths_allowed(paths: list[str]) -> bool:
+    return all(
+        path.startswith("reviews/") and path.endswith(".json") and "/" not in path[8:]
+        for path in paths
+    )
+
+
+def validate_review_gate(
+    directory: str | Path,
+    head_revision: str,
+    repo_root: str | Path = ".",
+    *,
+    is_ancestor: Callable[[str, str, Path], bool] | None = None,
+    changed_paths: Callable[[str, str, Path], list[str]] | None = None,
+) -> str:
+    """Require a passing review of the latest substantive repository state.
+
+    A review records the implementation commit it examined. The review artifact
+    itself necessarily lands in a later commit, so exact HEAD equality would be
+    self-referential. The gate therefore accepts a passing review only when its
+    implementation revision is an ancestor of HEAD and every later tree change
+    is another machine-readable review artifact directly under ``reviews/``.
+    """
+    directory = Path(directory)
+    repo_root = Path(repo_root)
+    if not directory.exists():
+        raise ValidationError("review gate requires a reviews directory")
+
+    ancestor_fn = is_ancestor or _git_is_ancestor
+    changed_fn = changed_paths or _git_changed_paths
+    candidates: list[tuple[int, str]] = []
+
+    for path in sorted(directory.glob("*.json")):
+        data = _validate_review_data(path)
+        if data["verdict"] != "pass":
+            continue
+        revision = str(data["implementation_revision"])
+        if not ancestor_fn(revision, head_revision, repo_root):
+            continue
+        paths = changed_fn(revision, head_revision, repo_root)
+        if not _post_review_paths_allowed(paths):
+            continue
+        candidates.append((len(paths), str(data["experiment_id"])))
+
+    if not candidates:
+        raise ValidationError(
+            "no passing review covers the current substantive state; add a review "
+            "for the latest implementation commit and make no non-review changes afterward"
+        )
+
+    candidates.sort(key=lambda item: item[0])
+    return candidates[0][1]
