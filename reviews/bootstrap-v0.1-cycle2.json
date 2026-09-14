@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "experiment_id": "bootstrap-v0.1-cycle2",
+  "implementation_revision": "5db7eec76fa7894007cfbab5952074c5979ddedb",
+  "reviewer_role": "adversarial architecture reviewer",
+  "verdict": "pass",
+  "objections": [
+    {
+      "id": "B1",
+      "severity": "high",
+      "status": "resolved",
+      "claim": "The donor registry stored one decision per repository even though the charter defines the mechanism as the default reuse unit.",
+      "evidence": "Registry schema version 2 now stores independently validated component records with their own decisions, claims, evidence, and notes.",
+      "disposition": "Resolved by moving reuse decisions to component level and adding duplicate-component and license-gating tests."
+    },
+    {
+      "id": "B2",
+      "severity": "medium",
+      "status": "open",
+      "claim": "CI validates review artifacts but does not yet guarantee that every future substantive change creates one tied to that change.",
+      "evidence": "The current validator scans review JSON files but has no pull-request-aware requirement for a matching artifact.",
+      "disposition": "Accepted as a bootstrap limitation. Add revision-aware or PR-aware review enforcement before the first cognitive integration experiment."
+    }
+  ]
+}
