@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "experiment_id": "anima-memory-v0.1-cycle2",
+  "implementation_revision": "d95e318f8c8dbf0beffbc875e29c168a9afd60e2",
+  "reviewer_role": "adversarial donor-integration reviewer",
+  "verdict": "pass",
+  "objections": [
+    {
+      "id": "A1",
+      "severity": "high",
+      "status": "resolved",
+      "claim": "The adapter previously could wrap the wrong anima.store implementation while still claiming evidence about the pinned donor.",
+      "evidence": "The adapter now verifies anima/store.py against Git blob c4e12341f50cd6f0c85df9d808545824c268e576 from pinned revision ba215ce72bcaedd147d5d08de6e54555a62952c1 before constructing MemoryStore. Tests reject a mismatched source and verify the pinned source. CRLF normalization prevents a legitimate Windows checkout from failing solely because of line-ending conversion.",
+      "disposition": "Resolved. Provenance is enforced at the wrapped source boundary as well as by the CI checkout pin."
+    },
+    {
+      "id": "A2",
+      "severity": "medium",
+      "status": "resolved",
+      "claim": "The donor registry classified MemoryStore as adapt although the experiment uses the unmodified donor behind a wrapper.",
+      "evidence": "The registry now classifies anima-always-awake/memory-store as wrap and records the upstream and harness evidence paths while retaining provisional donor status.",
+      "disposition": "Resolved. Registry semantics now match the implementation."
+    },
+    {
+      "id": "A3",
+      "severity": "medium",
+      "status": "resolved",
+      "claim": "The matched-history result cannot isolate the donor's strength increment from recency and access-count effects.",
+      "evidence": "The experiment claim and documentation are explicitly composite: retrieval-history-dependent durability. The evidence boundary states that recall updates last_access_ts, access_count, and strength and forbids attributing the result to retrieval-strength reinforcement alone.",
+      "disposition": "Resolved by narrowing causal interpretation rather than inventing a false single-variable claim."
+    },
+    {
+      "id": "A4",
+      "severity": "medium",
+      "status": "open",
+      "claim": "The harness result uses deterministic synthetic embeddings and a single delayed decay pass, so it does not establish robustness under real embedding models or Anima's full repeated sleep lifecycle.",
+      "evidence": "The experiment intentionally uses a three-dimensional deterministic embedding and invokes decay once at day 60 to isolate reproducible memory mechanics.",
+      "disposition": "Accepted limitation for Experiment 001. Test real embedding and repeated lifecycle conditions only if this mechanism proceeds to a broader integration stage."
+    },
+    {
+      "id": "A5",
+      "severity": "medium",
+      "status": "open",
+      "claim": "Memory availability is not downstream behavior, so the experiment does not yet show a reduction in any symptom of artificiality.",
+      "evidence": "The result terminates at the final recalled-memory set; no fixed decision policy or character renderer consumes that memory in this experiment.",
+      "disposition": "Accepted and explicitly bounded. The next experiment should hold a downstream policy constant and test whether the donor-induced memory divergence causes behavior or interpretation to diverge."
+    }
+  ]
+}

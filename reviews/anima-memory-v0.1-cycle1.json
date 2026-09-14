@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "experiment_id": "anima-memory-v0.1-cycle1",
+  "implementation_revision": "b07b60ac82593ffbb5b0af8361cccdfd71171661",
+  "reviewer_role": "adversarial donor-integration reviewer",
+  "verdict": "revise",
+  "objections": [
+    {
+      "id": "A1",
+      "severity": "high",
+      "status": "open",
+      "claim": "The adapter claims to wrap a pinned Anima donor but will silently import any installed package exposing anima.store, so local or future runs can produce evidence against the wrong donor revision.",
+      "evidence": "AnimaMemoryAdapter.open imports anima.store by module name and performs no source-byte or revision verification. CI pins the checkout, but the adapter itself does not protect provenance outside CI.",
+      "disposition": "Verify the imported donor source against the known Git blob identity for anima/store.py at the pinned revision, and test the verification boundary."
+    },
+    {
+      "id": "A2",
+      "severity": "medium",
+      "status": "open",
+      "claim": "The donor registry says the MemoryStore decision is adapt even though this experiment deliberately preserves the donor implementation and wraps it behind an adapter.",
+      "evidence": "donors/registry.json lists anima-always-awake/memory-store with decision adapt; the experiment documentation and implementation state that MemoryStore is unmodified.",
+      "disposition": "Change the component decision to wrap and record the new harness evidence without promoting the entire donor to accepted status."
+    },
+    {
+      "id": "A3",
+      "severity": "medium",
+      "status": "open",
+      "claim": "A passing matched-history result cannot be attributed to Anima's strength increment alone because recall simultaneously updates recency, access_count, and strength.",
+      "evidence": "The donor recall path updates last_access_ts and access_count and adds strength, while later decay uses last_access_ts, access_count, importance, and strength.",
+      "disposition": "Keep the claim at the composite level, retrieval-history-dependent durability, and explicitly forbid interpreting this experiment as an isolation of the testing-effect strength term."
+    }
+  ]
+}

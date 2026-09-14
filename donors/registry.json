@@ -11,10 +11,10 @@
       "components": [
         {
           "id": "memory-store",
-          "decision": "adapt",
-          "claim": "SQLite persistence, retrieval reinforcement, and deterministic decay are separable enough to evaluate behind an adapter.",
-          "evidence": ["anima/store.py", "tests/"],
-          "notes": "Preserve injected embedding and clock boundaries for deterministic tests."
+          "decision": "wrap",
+          "claim": "The pinned unmodified SQLite MemoryStore can be wrapped behind a neutral adapter and its retrieval-history-dependent durability can be tested deterministically.",
+          "evidence": ["anima/store.py", "tests/test_store.py", "docs/experiments/ANIMA_MEMORY_V0_1.md", "tests/test_anima_memory_experiment.py"],
+          "notes": "Source bytes are verified against the pinned store.py Git blob. Keep the component provisional until a downstream behavior experiment shows that history-dependent recall changes action or interpretation rather than only memory availability."
         },
         {
           "id": "heartbeat-scheduler",
