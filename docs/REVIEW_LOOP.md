@@ -41,9 +41,17 @@ The reviewer must check whether the change rebuilds a mechanism that already exi
 
 ## Review artifacts
 
-Each substantive experiment should eventually produce a machine-readable review artifact under `reviews/`. Bootstrap validation uses JSON so it can run on the Python standard library alone.
+Each substantive experiment produces a machine-readable review artifact under `reviews/`. Bootstrap validation uses JSON so it can run on the Python standard library alone.
 
 A review artifact contains an experiment identifier, implementation revision, reviewer role, verdict, severity-tagged objections, evidence references, and disposition for each objection. High-severity objections with disposition `open` block a passing review state.
+
+## Revision-aware merge gate
+
+A review cannot simply exist somewhere in history. CI requires a passing review that covers the latest substantive implementation state.
+
+The reviewer records the exact implementation commit it examined. The review artifact must be committed after that implementation commit. Because adding the review file changes HEAD, exact equality between the reviewed revision and HEAD would be self-referential. The gate therefore accepts the review only when the reviewed implementation revision is an ancestor of HEAD and every later tree change is another JSON review artifact directly under `reviews/`.
+
+Any code, test, donor-registry, workflow, or substantive documentation change after the reviewed implementation revision invalidates coverage and requires another review cycle. CI uses full git history to enforce this rule.
 
 ## Agent roles
 
