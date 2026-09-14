@@ -28,6 +28,17 @@ class AnimaProvenanceTests(unittest.TestCase):
         with self.assertRaises(DonorRevisionMismatchError):
             verify_anima_store_module(fake_module)
 
+    def test_blob_identity_normalizes_windows_line_endings(self) -> None:
+        from integration_harness.adapters.anima_memory import git_blob_sha1
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            lf = root / "lf.py"
+            crlf = root / "crlf.py"
+            lf.write_bytes(b"a = 1\nb = 2\n")
+            crlf.write_bytes(b"a = 1\r\nb = 2\r\n")
+            self.assertEqual(git_blob_sha1(lf), git_blob_sha1(crlf))
+
 
 @unittest.skipUnless(ANIMA_AVAILABLE, "pinned Anima donor is not on PYTHONPATH")
 class AnimaMemoryExperimentTests(unittest.TestCase):
